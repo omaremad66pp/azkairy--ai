@@ -2,45 +2,44 @@ name: Flutter Build APK
 
 on:
   push:
-    branches: [ "main", "رئيسي" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main", "رئيسي" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.19.0'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0' # نفس الإصدار المستخدم في بيئتك
 
-    - name: Fix Missing Android Files
-      run: |
-        mv lib /tmp/lib_backup
-        mv pubspec.yaml /tmp/pubspec_backup
-        flutter create . --org com.omaremad.azkari --project-name azkai_app
-        rm -rf lib pubspec.yaml
-        mv /tmp/lib_backup lib
-        mv /tmp/pubspec_backup pubspec.yaml
+      - name: Install dependencies
+        run: flutter pub get
 
-    - name: Install dependencies
-      run: flutter pub get
+      - name: Create Android Project Structure Automatically
+        run: |
+          # هذا الأمر السحري سيقوم بإنشاء مجلد android والملفات الناقصة تلقائياً
+          flutter create . --platforms=android
 
-    - name: Build APK
-      run: flutter build apk --release
+      - name: Build APK
+        run: flutter build apk --release
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: azkairy-ai-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
