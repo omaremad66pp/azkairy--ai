@@ -228,3 +228,308 @@ class _QuranTabState extends State<QuranTab> {
         _isLoading = false;
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadQuranData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('المصحف الشريف الكامل (أوفلاين)'), backgroundColor: const Color(0xFF161926), centerTitle: true),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF9D8BFF)))
+          : _errorMsg.isNotEmpty
+              ? Center(child: Padding(padding: const EdgeInsets.all(16.0), child: Text(_errorMsg, textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent))))
+              : ListView.builder(
+                  itemCount: _surahs.length,
+                  itemBuilder: (context, index) {
+                    final surah = _surahs[index];
+                    final int surahNum = surah['number'] ?? (index + 1);
+                    final String surahName = surah['name'] ?? 'سورة جديدة';
+                    final List ayahsList = surah['ayahs'] ?? [];
+
+                    return Card(
+                      color: Theme.of(context).cardColor,
+                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      child: ListTile(
+                        trailing: CircleAvatar(
+                          backgroundColor: const Color(0xFF5D48B7),
+                          child: Text('$surahNum', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                        ),
+                        title: Text(surahName, textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text('عدد الآيات الحقيقية: ${ayahsList.length}', textAlign: TextAlign.right),
+                        leading: const Icon(Icons.chrome_reader_mode, color: Color(0xFF9D8BFF)),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RealSurahViewer(
+                                name: surahName,
+                                ayahs: ayahsList,
+                                fontSize: widget.fontSize,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+}
+
+class RealSurahViewer extends StatelessWidget {
+  final String name;
+  final List ayahs;
+  final double fontSize;
+
+  const RealSurahViewer({Key? key, required this.name, required this.ayahs, required this.fontSize}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('سورة $name'), backgroundColor: const Color(0xFF161926)),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            if (name != "التوبة" && name != "سورة التوبة")
+              const Text(
+                "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.amber),
+                textAlign: TextAlign.center,
+              ),
+            const SizedBox(height: 15),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 10,
+                    children: List.generate(ayahs.length, (index) {
+                      final String text = ayahs[index]['text'] ?? '';
+                      return Text(
+                        '$text ﴿${index + 1}﴾ ',
+                        style: TextStyle(fontSize: fontSize, height: 1.8),
+                        textAlign: TextAlign.justify,
+                      );
+                    }),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AzkarTab extends StatefulWidget {
+  const AzkarTab({Key? key}) : super(key: key);
+  @override
+  State<AzkarTab> createState() => _AzkarTabState();
+}
+
+class _AzkarTabState extends State<AzkarTab> {
+  int _counter = 0;
+  final List<String> _azkar = [
+    "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لا شريك له.",
+    "يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ أَصْلِحْ لِي شَأْنِي كُلَّهُ وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ.",
+    "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلقتَنِي وَأَنَا عَبْدُكَ وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ."
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF161926),
+          bottom: const TabBar(
+            tabs: [Tab(text: 'المسبحة الذكية'), Tab(text: 'قائمة الأذكار')],
+            indicatorColor: Color(0xFF9D8BFF),
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('أستغفر الله العظيم وأتوب إليه', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 30),
+                GestureDetector(
+                  onTap: () { setState(() => _counter++); HapticFeedback.vibrate(); },
+                  child: Container(
+                    width: 160, height: 160,
+                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF5D48B7)),
+                    child: Center(child: Text('$_counter', style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold))),
+                  ),
+                ),
+                TextButton(onPressed: () => setState(() => _counter = 0), child: const Text('تصفير المسبحة', style: TextStyle(color: Colors.redAccent)))
+              ],
+            ),
+            ListView.builder(
+              itemCount: _azkar.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  color: Theme.of(context).cardColor,
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14.0),
+                    child: Text(_azkar[index], textAlign: TextAlign.right, style: const TextStyle(fontSize: 16, height: 1.4)),
+                  ),
+                );
+              },
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AlarmTab extends StatefulWidget {
+  final bool isSmartAlarmEnabled;
+  const AlarmTab({Key? key, required this.isSmartAlarmEnabled}) : super(key: key);
+  @override
+  State<AlarmTab> createState() => _AlarmTabState();
+}
+
+class _AlarmTabState extends State<AlarmTab> {
+  final TextEditingController _chatController = TextEditingController();
+  final List<Map<String, String>> _messages = [
+    {"role": "ai", "msg": "مرحباً بك في وحدة الذكاء الاصطناعي الأوفلاين. اسألني عن الصلاة، فضل الذكر، أو إذا كنت تشعر بالضيق الصدري."}
+  ];
+
+  void _sendMessage() {
+    String query = _chatController.text.trim().toLowerCase();
+    if (query.isEmpty) return;
+
+    setState(() {
+      _messages.add({"role": "user", "msg": _chatController.text});
+      String response = "تذكر دائماً أن بذكر الله تطمئن القلوب، جرب صياغة سؤالك بشكل آخر كالبحث عن (صلاة، ضيق، ذكر).";
+      
+      if (query.contains("صلاة") || query.contains("صلي")) {
+        response = "الصلاة هي عماد الدين، وأقرب ما يكون العبد من ربه وهو ساجد؛ فحافظ عليها في وقتها لتنعم بالراحة الكلية.";
+      } else if (query.contains("ضيق") || query.contains("حزين") || query.contains("تعبان")) {
+        response = "إذا ضاق صدرك عليك بالقرآن وكثرة السجود والاستغفار؛ قال تعالى: 'وَلَقَدْ نَعْلَمُ أَنَّكَ يَضِيقُ صَدْرُكَ بِمَا يَقُولُونَ * فَسَبِّحْ بِحَمْدِ رَبِّكَ وَكُن مِّنَ السَّاجِدِينَ'.";
+      } else if (query.contains("ذكر") || query.contains("أذكار") || query.contains("استغفار")) {
+        response = "أفضل الذكر هو 'لا إله إلا الله'، وكثرة الاستغفار تفتح المغاليق وتجلب الرزق والبركة في يومك.";
+      }
+      
+      _messages.add({"role": "ai", "msg": response});
+    });
+    _chatController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('مساعد أذكاري AI الشامل'), backgroundColor: const Color(0xFF161926), centerTitle: true),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: _messages.length,
+              itemBuilder: (context, i) {
+                bool isUser = _messages[i]["role"] == "user";
+                return Align(
+                  alignment: isUser ? Alignment.centerLeft : Alignment.centerRight,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isUser ? const Color(0xFF5D48B7) : Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(_messages[i]["msg"]!, style: TextStyle(color: isUser ? Colors.white : null), textAlign: TextAlign.right),
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                IconButton(icon: const Icon(Icons.send, color: Color(0xFF9D8BFF)), onPressed: _sendMessage),
+                Expanded(
+                  child: TextField(
+                    controller: _chatController,
+                    textAlign: TextAlign.right,
+                    decoration: InputDecoration(
+                      hintText: 'اكتب سؤالك هنا (مثال: أشعر بضيق)...',
+                      filled: true,
+                      fillColor: Theme.of(context).cardColor,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class SettingsTab extends StatelessWidget {
+  final Function(bool) onThemeChanged;
+  final double fontSize;
+  final Function(double) onFontSizeChanged;
+  final bool isSmartAlarmEnabled;
+  final Function(bool) onAlarmSettingChanged;
+
+  const SettingsTab({
+    Key? key,
+    required this.onThemeChanged,
+    required this.fontSize,
+    required this.onFontSizeChanged,
+    required this.isSmartAlarmEnabled,
+    required this.onAlarmSettingChanged,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('لوحة الإعدادات الشاملة'), backgroundColor: const Color(0xFF161926), centerTitle: true),
+      body: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          SwitchListTile(
+            title: const Text('المظهر الداكن (Dark Mode)'),
+            value: Theme.of(context).brightness == Brightness.dark,
+            activeColor: const Color(0xFF9D8BFF),
+            onChanged: (v) => onThemeChanged(v),
+          ),
+          SwitchListTile(
+            title: const Text('تشغيل منبه الفجر الرياضي الذكي'),
+            subtitle: const Text('يجبرك على حل مسألة حسابية للاستيقاظ ونفي النوم'),
+            value: isSmartAlarmEnabled,
+            activeColor: const Color(0xFF9D8BFF),
+            onChanged: (v) => onAlarmSettingChanged(v),
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${fontSize.toInt()} px', style: const TextStyle(fontWeight: FontWeight.bold)),
+                const Text('تغيير حجم خط القرآن وتكبير السطور'),
+              ],
+            ),
+          ),
+          Slider(
+            min: 16.0, max: 36.0,
+            value: fontSize,
+            activeColor: const Color(0
