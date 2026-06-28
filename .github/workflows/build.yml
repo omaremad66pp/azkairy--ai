@@ -24,6 +24,15 @@ jobs:
       with:
         flutter-version: '3.19.0'
 
+    - name: Fix Missing Android Files
+      run: |
+        mv lib /tmp/lib_backup
+        mv pubspec.yaml /tmp/pubspec_backup
+        flutter create . --org com.omaremad.azkari --project-name azkai_app
+        rm -rf lib pubspec.yaml
+        mv /tmp/lib_backup lib
+        mv /tmp/pubspec_backup pubspec.yaml
+
     - name: Install dependencies
       run: flutter pub get
 
